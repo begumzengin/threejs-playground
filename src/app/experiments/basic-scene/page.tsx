@@ -32,19 +32,47 @@ const BasicScene = () => {
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
 
-    // Add objects
+    // Add cube with edges and vertices
     const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+    const material = new THREE.MeshPhongMaterial({ 
+      color: 0x00ff00,
+      shininess: 100,
+      specular: 0x004400,
+      flatShading: true
+    });
     const cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
 
+    // Add edges
+    const edges = new THREE.EdgesGeometry(geometry);
+    const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+    const edgesLine = new THREE.LineSegments(edges, edgesMaterial);
+    cube.add(edgesLine);
+
+    // Add vertices
+    const vertices = new THREE.Points(
+      geometry,
+      new THREE.PointsMaterial({ 
+        color: 0x000000, 
+        size: 0.001,
+        sizeAttenuation: true
+      })
+    );
+    cube.add(vertices);
+
     // Add lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
 
-    const pointLight = new THREE.PointLight(0xffffff, 1);
-    pointLight.position.set(5, 5, 5);
-    scene.add(pointLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(5, 5, 5);
+    scene.add(directionalLight);
+
+    const spotLight = new THREE.SpotLight(0xffffff, 0.5);
+    spotLight.position.set(-5, 5, 0);
+    spotLight.angle = Math.PI / 6;
+    spotLight.penumbra = 0.2;
+    scene.add(spotLight);
 
     // Animation loop
     const animate = () => {
