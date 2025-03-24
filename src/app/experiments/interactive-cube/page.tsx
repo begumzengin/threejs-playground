@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 const InteractiveCube = () => {
   const mountRef = useRef<HTMLDivElement>(null);
-  const [isClicked, setIsClicked] = useState(false);
+  const materialRef = useRef<THREE.MeshPhongMaterial | null>(null);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -35,9 +35,26 @@ const InteractiveCube = () => {
 
     // Add cube
     const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+    materialRef.current = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+    const material = materialRef.current;
     const cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
+
+    const edges = new THREE.EdgesGeometry(geometry);
+    const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+    const edgesLine = new THREE.LineSegments(edges, edgesMaterial);
+    cube.add(edgesLine);
+
+    // Add vertices
+    const vertices = new THREE.Points(
+      geometry,
+      new THREE.PointsMaterial({ 
+        color: 0x000000, 
+        size: 0.001,
+        sizeAttenuation: true
+      })
+    );
+    cube.add(vertices);
 
     // Add lights
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -68,11 +85,22 @@ const InteractiveCube = () => {
     const handleClick = () => {
       raycaster.setFromCamera(mouse, camera);
       const intersects = raycaster.intersectObject(cube);
-
-      if (intersects.length > 0) {
-        setIsClicked(!isClicked);
-        const newColor = isClicked ? 0x00ff00 : 0xff0000;
-        (cube.material as THREE.MeshPhongMaterial).color.setHex(newColor);
+  
+      if (intersects.length > 0 && materialRef.current) {
+        const currentColor = materialRef.current.color;
+        const targetColor = new THREE.Color(currentColor.getHex() === 0x00ff00 ? 0xff0000 : 0x00ff00);
+        let progress = 0;
+        
+        const animateColor = () => {
+          progress += 0.02;
+          if (progress <= 1) {
+            const lerpedColor = currentColor.clone().lerp(targetColor, progress);
+            materialRef.current!.color.copy(lerpedColor);
+            requestAnimationFrame(animateColor);
+          }
+        };
+        
+        animateColor();
       }
     };
 
@@ -105,7 +133,7 @@ const InteractiveCube = () => {
       mountRef.current?.removeChild(renderer.domElement);
       renderer.dispose();
     };
-  }, [isClicked]);
+  }, []);
 
   return <div ref={mountRef} className="w-full h-screen" />;
 };
