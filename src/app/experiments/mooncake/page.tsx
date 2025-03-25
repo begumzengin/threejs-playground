@@ -12,7 +12,43 @@ const Mooncake = () => {
 
     // Scene setup
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf0f0f0);
+    scene.background = new THREE.Color(0x000020);
+
+    // Add stars
+    const starsGeometry = new THREE.BufferGeometry();
+    const starsCount = 1000;
+    const starsPositions = new Float32Array(starsCount * 3);
+    
+    for(let i = 0; i < starsCount * 3; i += 3) {
+      starsPositions[i] = (Math.random() - 0.5) * 100;
+      starsPositions[i + 1] = (Math.random() - 0.5) * 100;
+      starsPositions[i + 2] = (Math.random() - 0.5) * 100;
+    }
+    
+    starsGeometry.setAttribute('position', new THREE.BufferAttribute(starsPositions, 3));
+    
+    const starsMaterial = new THREE.PointsMaterial({
+      color: 0xffffff,
+      size: 0.1,
+      transparent: true,
+      opacity: 0.8,
+    });
+    
+    const stars = new THREE.Points(starsGeometry, starsMaterial);
+    scene.add(stars);
+    
+    // Add light beams
+    const beamLight1 = new THREE.SpotLight(0x4444ff, 2);
+    beamLight1.position.set(-10, 5, -5);
+    beamLight1.angle = Math.PI / 6;
+    beamLight1.penumbra = 0.5;
+    scene.add(beamLight1);
+    
+    const beamLight2 = new THREE.SpotLight(0x4444ff, 2);
+    beamLight2.position.set(10, -5, -5);
+    beamLight2.angle = Math.PI / 6;
+    beamLight2.penumbra = 0.5;
+    scene.add(beamLight2);
 
     // Camera setup
     const camera = new THREE.PerspectiveCamera(
