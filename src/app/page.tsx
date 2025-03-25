@@ -20,6 +20,12 @@ export default function Home() {
       description: "Multiple animated 3D objects",
       path: "/experiments/animated-scene",
       icon: "/cube.svg"
+    },
+    {
+      title: "Mooncake",
+      description: "Final Space's Mooncake",
+      path: "/experiments/mooncake",
+      icon: "/mooncake.png"
     }
   ];
 
@@ -44,7 +50,7 @@ export default function Home() {
             >
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transition-transform duration-300 group-hover:transform group-hover:scale-105">
                 <div className="p-6">
-                  <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4">
                     <Image
                       src={experiment.icon}
                       alt={experiment.title}
