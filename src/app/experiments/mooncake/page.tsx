@@ -235,9 +235,26 @@ const Mooncake = () => {
     eyeSpotLight2.penumbra = 0.9;
     scene.add(eyeSpotLight2);
 
+    // Movement and animation state
+    const movementState = {
+      isMoving: false,
+      direction: 1, // 1 for forward, -1 for backward
+      speed: 0.1,
+      runningTime: 0
+    };
+
     // Mouse tracking
     const mouse = new THREE.Vector2();
     const target = new THREE.Vector3();
+    const raycaster = new THREE.Raycaster();
+    
+    // Antenna hover state
+    const antennaState = {
+      leftHover: false,
+      rightHover: false,
+      leftTime: 0,
+      rightTime: 0
+    };
 
     const handleMouseMove = (event: MouseEvent) => {
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -250,13 +267,96 @@ const Mooncake = () => {
       [leftEye, rightEye].forEach((eye) => {
         eye.lookAt(target);
       });
+
+      // Raycaster for antenna hover
+      raycaster.setFromCamera(mouse, camera);
+      const leftIntersects = raycaster.intersectObject(leftAntenna, true);
+      const rightIntersects = raycaster.intersectObject(rightAntenna, true);
+
+      antennaState.leftHover = leftIntersects.length > 0;
+      antennaState.rightHover = rightIntersects.length > 0;
     };
 
+    // Keyboard controls
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+        movementState.isMoving = true;
+        movementState.direction = event.key === 'ArrowUp' ? 1 : -1;
+      }
+    };
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+        movementState.isMoving = false;
+        
+        // Reset leg positions and rotations
+        leftLeg.position.set(-0.9, -1.3, 0);
+        rightLeg.position.set(0.9, -1.3, 0);
+        leftLeg.rotation.x = 0;
+        rightLeg.rotation.x = 0;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('mousemove', handleMouseMove);
 
     // Animation loop
     const animate = () => {
       requestAnimationFrame(animate);
+
+      // Antenna hover animation
+      if (antennaState.leftHover) {
+        antennaState.leftTime += 0.1;
+        leftAntenna.rotation.z = Math.sin(antennaState.leftTime * 5) * 0.3;
+      } else if (leftAntenna.rotation.z !== 0) {
+        leftAntenna.rotation.z *= 0.9;
+        if (Math.abs(leftAntenna.rotation.z) < 0.01) {
+          leftAntenna.rotation.z = 0;
+          antennaState.leftTime = 0;
+        }
+      }
+
+      if (antennaState.rightHover) {
+        antennaState.rightTime += 0.1;
+        rightAntenna.rotation.z = -Math.sin(antennaState.rightTime * 5) * 0.3;
+      } else if (rightAntenna.rotation.z !== 0) {
+        rightAntenna.rotation.z *= 0.9;
+        if (Math.abs(rightAntenna.rotation.z) < 0.01) {
+          rightAntenna.rotation.z = 0;
+          antennaState.rightTime = 0;
+        }
+      }
+
+      if (movementState.isMoving) {
+        // Update position
+        faceGroup.position.z += movementState.direction * movementState.speed;
+        
+        // Update running animation
+        movementState.runningTime += 0.1;
+        const bounce = Math.sin(movementState.runningTime * 5) * 0.1;
+        
+        // Bounce effect
+        faceGroup.position.y = bounce;
+        
+        // Leg animation
+        const legSwing = Math.sin(movementState.runningTime * 10);
+        const legLift = Math.abs(legSwing) * 0.2;
+        
+        // Left leg animation
+        leftLeg.position.z = -0.9 + legSwing * 0.5;
+        leftLeg.position.y = -1.3 + legLift;
+        leftLeg.rotation.x = legSwing * 0.3;
+        
+        // Right leg animation
+        rightLeg.position.z = 0.9 + Math.sin(movementState.runningTime * 10 + Math.PI) * 0.5;
+        rightLeg.position.y = -1.3 + Math.abs(Math.sin(movementState.runningTime * 10 + Math.PI)) * 0.2;
+        rightLeg.rotation.x = Math.sin(movementState.runningTime * 10 + Math.PI) * 0.3;
+        
+        // Face direction - always face forward
+        faceGroup.rotation.y = 0;
+      }
+
       controls.update();
       renderer.render(scene, camera);
     };
@@ -274,6 +374,8 @@ const Mooncake = () => {
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
       mountRef.current?.removeChild(renderer.domElement);
       renderer.dispose();
     };
