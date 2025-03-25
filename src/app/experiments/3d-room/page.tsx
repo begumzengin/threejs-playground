@@ -460,12 +460,100 @@ const Room = () => {
       scene.add(macBookGroup);
     };
 
+    // Ergonomik ofis sandalyesi oluşturma fonksiyonu
+    const createChair = () => {
+        const chairGroup = new THREE.Group();
+    
+        // 1. Oturma Yeri (Seat)
+        // Hafif yuvarlak hatlara sahip bir oturma yeri için silindir geometrisi kullanıyoruz.
+        const seatGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.05, 32);
+        const seatMaterial = new THREE.MeshStandardMaterial({
+        color: 0x333333,
+        roughness: 0.5,
+        metalness: 0.2,
+        });
+        const seat = new THREE.Mesh(seatGeometry, seatMaterial);
+        seat.castShadow = true;
+        seat.receiveShadow = true;
+        // Oturma yerinin merkezini (chairGroup içindeki) y = 0.5 olarak belirliyoruz.
+        seat.position.y = 0.5;
+        chairGroup.add(seat);
+    
+        // 2. Sırt Dayanağı (Backrest)
+        // İnce bir kutu geometrisi ile sırt dayanağını oluşturuyoruz.
+        const backrestShape = new THREE.Shape();
+        // absellipse(centerX, centerY, xRadius, yRadius, startAngle, endAngle, clockwise, rotationOffset)
+        backrestShape.absellipse(0, 0, 0.3, 0.45, 0, Math.PI * 2, false, 0);
+
+        const extrudeSettings = {
+            depth: 0.05,      // Sırtlığın kalınlığı
+            bevelEnabled: false
+        };
+
+        const backrestGeometry = new THREE.ExtrudeGeometry(backrestShape, extrudeSettings);
+        const backrestMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            roughness: 0.5,
+            metalness: 0.2,
+        });
+        const backrest = new THREE.Mesh(backrestGeometry, backrestMaterial);
+        backrest.castShadow = true;
+        backrest.receiveShadow = true;
+
+        backrest.position.set(0, 0.85, 0.3);
+        chairGroup.add(backrest);
+
+        // 3. Destek Kolonu (Central Column)
+        // Oturma yerini zemine bağlayan ince bir silindir.
+        const columnGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.4, 16);
+        const columnMaterial = new THREE.MeshStandardMaterial({
+        color: 0x666666,
+        roughness: 0.5,
+        metalness: 0.3,
+        });
+        const column = new THREE.Mesh(columnGeometry, columnMaterial);
+        column.castShadow = true;
+        column.receiveShadow = true;
+        // Oturma yerinin alt yüzü yaklaşık 0.5 - 0.025 = 0.475’ye denk gelir.
+        // Column yüksekliği 0.4 olduğundan, üstü oturma yerinin hemen altında olmalı:
+        // column.position.y + 0.2 = 0.475  ⇒ column.position.y = 0.275.
+        column.position.y = 0.275;
+        chairGroup.add(column);
+    
+        // 4. Tekerlekler (Wheels)
+        // Ofis sandalyesi için 5 adet tekerlek ekliyoruz.
+        const wheelGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.02, 16);
+        const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+        const wheelCount = 5;
+        // Column’un alt kısmı: column.position.y - 0.2 (yarı yüksekliği) = 0.275 - 0.2 = 0.075.
+        const wheelY = 0.075;
+        const wheelRadiusFromCenter = 0.25;
+        for (let i = 0; i < wheelCount; i++) {
+        const theta = (i / wheelCount) * Math.PI * 2;
+        const wx = wheelRadiusFromCenter * Math.cos(theta);
+        const wz = wheelRadiusFromCenter * Math.sin(theta);
+        const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+        // Tekerleğin silindirik yüzünün zeminle temas etmesi için 90° döndürüyoruz.
+        wheel.rotation.z = Math.PI / 2;
+        wheel.position.set(wx, wheelY, wz);
+        wheel.castShadow = true;
+        wheel.receiveShadow = true;
+        chairGroup.add(wheel);
+        }
+    
+        chairGroup.position.set(0, 0.3, -0.3);
+    
+        scene.add(chairGroup);
+    };
+  
+
     // Create room and furniture
     createWalls();
     createShelf();
     createDesk();
     createCarpet();
     createMacBook();
+    createChair();
     addLights();
 
     // Animation loop
