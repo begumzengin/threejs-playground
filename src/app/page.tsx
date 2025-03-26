@@ -26,7 +26,13 @@ export default function Home() {
       description: "Final Space's Mooncake",
       path: "/experiments/mooncake",
       icon: "/mooncake.png"
-    }
+    },
+    {
+      title: "3D Room",
+      description: "3D mini room",
+      path: "/experiments/3d-room",
+      icon: "/cube.svg"
+    },
   ];
 
   return (
