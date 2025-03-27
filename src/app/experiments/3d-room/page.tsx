@@ -73,28 +73,8 @@ const Room = () => {
       floor.receiveShadow = true;
       scene.add(floor);
 
-      // Back wall
-      const backWallShape = new THREE.Shape();
-      backWallShape.moveTo(-roomWidth/2, 0);
-      backWallShape.lineTo(roomWidth/2, 0);
-      backWallShape.lineTo(roomWidth/2, roomHeight);
-      backWallShape.lineTo(-roomWidth/2, roomHeight);
-      backWallShape.lineTo(-roomWidth/2, 0);
-
-      const backWallGeometry = new THREE.ExtrudeGeometry(backWallShape, extrudeSettings);
-      const wallMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0x9199c5,
-        roughness: 0.9,
-        metalness: 0.1
-      });
-      wallMaterial.side = THREE.DoubleSide;
-      const backWall = new THREE.Mesh(backWallGeometry, wallMaterial);
-      backWall.position.z = -roomDepth/2;
-      backWall.receiveShadow = true;
-      scene.add(backWall);
-
-      // Side wall with window
-      const sideWallGroup = new THREE.Group();
+      // Back wall with window
+      const backWallGroup = new THREE.Group();
       
       // Window frame
       const windowWidth = 2;
@@ -102,12 +82,19 @@ const Room = () => {
       const windowX = -1;
       const windowY = 1.5;
       
-      const sideWallShape = new THREE.Shape();
-      sideWallShape.moveTo(-roomDepth/2, 0);
-      sideWallShape.lineTo(roomDepth/2, 0);
-      sideWallShape.lineTo(roomDepth/2, roomHeight);
-      sideWallShape.lineTo(-roomDepth/2, roomHeight);
-      sideWallShape.lineTo(-roomDepth/2, 0);
+      const backWallShape = new THREE.Shape();
+      backWallShape.moveTo(-roomWidth/2, 0);
+      backWallShape.lineTo(roomWidth/2, 0);
+      backWallShape.lineTo(roomWidth/2, roomHeight);
+      backWallShape.lineTo(-roomWidth/2, roomHeight);
+      backWallShape.lineTo(-roomWidth/2, 0);
+      
+      const wallMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x9199c5,
+        roughness: 0.9,
+        metalness: 0.1
+      });
+      wallMaterial.side = THREE.DoubleSide;
       
       // Create window hole
       const windowShape = new THREE.Path();
@@ -116,12 +103,12 @@ const Room = () => {
       windowShape.lineTo(windowX + windowWidth, windowY + windowHeight);
       windowShape.lineTo(windowX, windowY + windowHeight);
       windowShape.lineTo(windowX, windowY);
-      sideWallShape.holes.push(windowShape);
+      backWallShape.holes.push(windowShape);
       
-      const sideWallGeometry = new THREE.ExtrudeGeometry(sideWallShape, extrudeSettings);
-      const sideWall = new THREE.Mesh(sideWallGeometry, wallMaterial);
-      sideWall.receiveShadow = true;
-      sideWallGroup.add(sideWall);
+      const backWallGeometry = new THREE.ExtrudeGeometry(backWallShape, extrudeSettings);
+      const backWallWithWindow = new THREE.Mesh(backWallGeometry, wallMaterial);
+      backWallWithWindow.receiveShadow = true;
+      backWallGroup.add(backWallWithWindow);
       
       // Window frame
       const frameGeometry = new THREE.BoxGeometry(windowWidth + 0.1, 0.2, 0.2);
@@ -132,26 +119,26 @@ const Room = () => {
       });
       
       const topFrame = new THREE.Mesh(frameGeometry, frameMaterial);
-      topFrame.position.set(windowX + windowWidth/2, windowY + windowHeight, 0);
+      topFrame.position.set(windowX + windowWidth/2, windowY + windowHeight, 0.1);
       topFrame.castShadow = true;
-      sideWallGroup.add(topFrame);
+      backWallGroup.add(topFrame);
       
       const bottomFrame = new THREE.Mesh(frameGeometry, frameMaterial);
-      bottomFrame.position.set(windowX + windowWidth/2, windowY, 0);
+      bottomFrame.position.set(windowX + windowWidth/2, windowY, 0.1);
       bottomFrame.castShadow = true;
-      sideWallGroup.add(bottomFrame);
+      backWallGroup.add(bottomFrame);
       
       const sideFrameGeometry = new THREE.BoxGeometry(0.2, windowHeight + 0.1, 0.2);
       
       const leftFrame = new THREE.Mesh(sideFrameGeometry, frameMaterial);
-      leftFrame.position.set(windowX, windowY + windowHeight/2, 0);
+      leftFrame.position.set(windowX, windowY + windowHeight/2, 0.1);
       leftFrame.castShadow = true;
-      sideWallGroup.add(leftFrame);
+      backWallGroup.add(leftFrame);
       
       const rightFrame = new THREE.Mesh(sideFrameGeometry, frameMaterial);
-      rightFrame.position.set(windowX + windowWidth, windowY + windowHeight/2, 0);
+      rightFrame.position.set(windowX + windowWidth, windowY + windowHeight/2, 0.1);
       rightFrame.castShadow = true;
-      sideWallGroup.add(rightFrame);
+      backWallGroup.add(rightFrame);
       
       // Window glass
       const glassGeometry = new THREE.PlaneGeometry(windowWidth - 0.2, windowHeight - 0.2);
@@ -166,13 +153,27 @@ const Room = () => {
       });
       
       const glass = new THREE.Mesh(glassGeometry, glassMaterial);
-      glass.position.set(windowX + windowWidth/2, windowY + windowHeight/2, 0.05);
-      sideWallGroup.add(glass);
+      glass.position.set(windowX + windowWidth/2, windowY + windowHeight/2, 0.15);
+      backWallGroup.add(glass);
       
-      sideWallGroup.position.x = -roomWidth/2;
-      sideWallGroup.position.z = 0;
-      sideWallGroup.rotation.y = Math.PI / 2;
-      scene.add(sideWallGroup);
+      backWallGroup.position.z = -roomDepth/2;
+      scene.add(backWallGroup);
+
+      // Left wall
+      const leftWallShape = new THREE.Shape();
+      leftWallShape.moveTo(-roomDepth/2, 0);
+      leftWallShape.lineTo(roomDepth/2, 0);
+      leftWallShape.lineTo(roomDepth/2, roomHeight);
+      leftWallShape.lineTo(-roomDepth/2, roomHeight);
+      leftWallShape.lineTo(-roomDepth/2, 0);
+      
+      const leftWallGeometry = new THREE.ExtrudeGeometry(leftWallShape, extrudeSettings);
+      const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
+      leftWall.position.x = -roomWidth/2;
+      leftWall.position.z = 0;
+      leftWall.rotation.y = Math.PI / 2;
+      leftWall.receiveShadow = true;
+      scene.add(leftWall);
 
       // Add edge lines
       const edgeGeometry = new THREE.BufferGeometry();
@@ -198,31 +199,74 @@ const Room = () => {
 
     // Create shelf
     const createShelf = () => {
-      const shelfGroup = new THREE.Group();
+      const bookshelfGroup = new THREE.Group();
 
-      // Shelf base
-      const shelfGeometry = new THREE.BoxGeometry(2, 0.1, 0.8);
-      const shelfMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
-      const shelf = new THREE.Mesh(shelfGeometry, shelfMaterial);
-      shelf.castShadow = true;
-      shelf.receiveShadow = true;
-      shelfGroup.add(shelf);
+      // Bookshelf base
+      const bookshelfGeometry = new THREE.BoxGeometry(2, 3, 0.4);
+      const bookshelfMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0xffffff,
+        roughness: 0.7,
+        metalness: 0.1
+      });
+      const bookshelf = new THREE.Mesh(bookshelfGeometry, bookshelfMaterial);
+      bookshelf.castShadow = true;
+      bookshelf.receiveShadow = true;
+      bookshelfGroup.add(bookshelf);
 
-      // Decorative items on shelf
-      const itemGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-      const itemMaterial = new THREE.MeshStandardMaterial({ color: 0x66d91e });
-      const item1 = new THREE.Mesh(itemGeometry, itemMaterial);
-      item1.position.set(-0.7, 0.15, 0);
-      item1.castShadow = true;
-      shelfGroup.add(item1);
+      // Create shelves
+      const shelfGeometry = new THREE.BoxGeometry(2, 0.05, 0.4);
+      const shelfMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0xffffff,
+        roughness: 0.7,
+        metalness: 0.1
+      });
 
-      const item2 = new THREE.Mesh(itemGeometry, itemMaterial);
-      item2.position.set(0, 0.15, 0);
-      item2.castShadow = true;
-      shelfGroup.add(item2);
+      // Add 4 shelves
+      const shelfPositions = [0.5, 1.0, 1.5, 2.0];
+      shelfPositions.forEach(y => {
+        const shelf = new THREE.Mesh(shelfGeometry, shelfMaterial);
+        shelf.position.y = y;
+        shelf.castShadow = true;
+        shelf.receiveShadow = true;
+        bookshelfGroup.add(shelf);
+      });
 
-      shelfGroup.position.set(0, 2, -2.5);
-      scene.add(shelfGroup);
+      // Add books on each shelf
+      const bookColors = [0xff9ecd, 0x9199c5, 0xe698a8, 0x66d91e, 0xff80b3];
+      shelfPositions.forEach(shelfY => {
+        let offsetX = -0.9;
+        const bookCount = 4 + Math.floor(Math.random() * 3);
+        
+        for (let i = 0; i < bookCount; i++) {
+          const bookWidth = 0.15 + Math.random() * 0.1;
+          const bookHeight = 0.25 + Math.random() * 0.1;
+          const bookDepth = 0.3;
+          
+          const bookGeometry = new THREE.BoxGeometry(bookWidth, bookHeight, bookDepth);
+          const bookMaterial = new THREE.MeshStandardMaterial({
+            color: bookColors[Math.floor(Math.random() * bookColors.length)],
+            roughness: 0.8,
+            metalness: 0.2
+          });
+          
+          const book = new THREE.Mesh(bookGeometry, bookMaterial);
+          book.position.set(offsetX, shelfY + bookHeight/2 + 0.025, 0);
+          book.castShadow = true;
+          book.receiveShadow = true;
+          
+          // Randomly rotate some books
+          if (Math.random() > 0.7) {
+            book.rotation.z = (Math.random() - 0.5) * 0.2;
+          }
+          
+          bookshelfGroup.add(book);
+          offsetX += bookWidth + 0.02;
+        }
+      });
+
+      bookshelfGroup.position.set(-2.8, 0.5, 0);
+      bookshelfGroup.rotation.y = Math.PI / 2;
+      scene.add(bookshelfGroup);
     };
 
     // Create desk
@@ -279,8 +323,8 @@ const Room = () => {
       
       // Window light
       const windowLight = new THREE.SpotLight(0xfff6f6, 1.2);
-      windowLight.position.set(-roomWidth/2 - 2, 2.5, 0);
-      windowLight.target.position.set(-roomWidth/2 + 2, 2.5, 0);
+      windowLight.position.set(0, 2.5, -roomDepth/2 - 2);
+      windowLight.target.position.set(0, 2.5, -roomDepth/2 + 2);
       windowLight.angle = Math.PI / 5;
       windowLight.penumbra = 0.7;
       windowLight.decay = 1.5;
@@ -549,7 +593,6 @@ const Room = () => {
 
     // Create room and furniture
     createWalls();
-    createShelf();
     createDesk();
     createCarpet();
     createMacBook();
