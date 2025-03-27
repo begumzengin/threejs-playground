@@ -33,6 +33,12 @@ export default function Home() {
       path: "/experiments/3d-room",
       icon: "/cube.svg"
     },
+    {
+      title: "Medieval City",
+      description: "Medieval city experiments",
+      path: "/experiments/medieval-city",
+      icon: "/cube.svg"
+    },
   ];
 
   return (
